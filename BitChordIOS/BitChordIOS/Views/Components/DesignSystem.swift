@@ -37,15 +37,18 @@ enum BCLayout {
 // MARK: - Colour Palette (Material3 dark, matches BitChord theme)
 extension Color {
     // Primary accent (BitChord uses artwork-extracted palette; fall back to white)
-    static let bcPrimary      = Color.white
-    static let bcBackground   = Color(white: 0.08)
-    static let bcSurface      = Color(white: 0.12)
-    static let bcSurfaceVar   = Color(white: 0.18)
-    static let bcOnBackground = Color.white
-    static let bcOnSurface    = Color.white
-    static let bcOnSurfaceVar = Color(white: 0.65)
-    static let bcOutline      = Color(white: 0.25)
-    static let bcError        = Color(red: 0.9, green: 0.3, blue: 0.3)
+    static let bcPrimary          = Color.white
+    static let bcOnPrimary        = Color.black
+    static let bcBackground       = Color(white: 0.08)
+    static let bcSurface          = Color(white: 0.12)
+    static let bcSurfaceVar       = Color(white: 0.18)
+    static let bcSurfaceVariant   = Color(white: 0.18)
+    static let bcOnBackground     = Color.white
+    static let bcOnSurface        = Color.white
+    static let bcOnSurfaceVar     = Color(white: 0.65)
+    static let bcOnSurfaceVariant = Color(white: 0.65)
+    static let bcOutline          = Color(white: 0.25)
+    static let bcError            = Color(red: 0.9, green: 0.3, blue: 0.3)
 }
 
 // MARK: - Typography (Material3 scale, closest SF Pro equivalents)
@@ -61,6 +64,22 @@ extension Font {
     static let bcLabelLarge    = Font.system(size: 14, weight: .medium)
     static let bcLabelMedium   = Font.system(size: 12, weight: .medium)
     static let bcLabelSmall    = Font.system(size: 11, weight: .medium)
+}
+
+enum BCFont {
+    static let displayLarge  = Font.system(size: 32, weight: .bold)
+    static let headlineLarge = Font.system(size: 24, weight: .bold)
+    static let titleLarge    = Font.system(size: 22, weight: .semibold)
+    static let titleMedium   = Font.system(size: 16, weight: .semibold)
+    static let titleSmall    = Font.system(size: 14, weight: .semibold)
+    static let bodyLarge     = Font.system(size: 16, weight: .regular)
+    static let bodyMedium    = Font.system(size: 14, weight: .regular)
+    static let bodySmall     = Font.system(size: 12, weight: .regular)
+    static let labelLarge    = Font.system(size: 14, weight: .medium)
+    static let labelMedium   = Font.system(size: 12, weight: .medium)
+    static let labelSmall    = Font.system(size: 11, weight: .medium)
+    static let caption       = Font.system(size: 12, weight: .regular)
+    static let caption2      = Font.system(size: 10, weight: .regular)
 }
 
 // MARK: - Modifiers

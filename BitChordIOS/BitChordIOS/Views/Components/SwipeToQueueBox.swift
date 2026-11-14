@@ -3,6 +3,7 @@
 // Android ref: sharedUi/.../ui/components/SwipeToQueueBox.kt
 
 import SwiftUI
+import UIKit
 
 /// Wraps any view with a right-swipe gesture that queues the song next.
 /// Matches Android `SwipeToQueueBox` — same swipe direction, same reveal icon.
