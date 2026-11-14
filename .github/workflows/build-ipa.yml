@@ -5,6 +5,10 @@ on:
     branches: [ "main", "master" ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+  issues: write
+
 jobs:
   build:
     name: Build BitChord IPA
@@ -20,7 +24,6 @@ jobs:
       - name: Build Archive
         run: |
           cd BitChordIOS
-          set -o pipefail
           xcodebuild archive \
             -project BitChordIOS.xcodeproj \
             -scheme BitChordIOS \
@@ -31,13 +34,28 @@ jobs:
             CODE_SIGN_IDENTITY="" \
             AD_HOC_CODE_SIGNING_ALLOWED=YES 2>&1 | tee xcodebuild.log
 
-      - name: Print Errors if Archive Failed
+      - name: Report Build Errors to Issue
         if: failure()
-        run: |
-          cd BitChordIOS
-          echo "==================== BUILD ERRORS ===================="
-          grep -E "(error:|fatal error:|\*\* ARCHIVE FAILED \*\*)" xcodebuild.log -B 2 -A 3 || tail -n 150 xcodebuild.log
-          echo "======================================================="
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let log = '';
+            try {
+              log = fs.readFileSync('BitChordIOS/xcodebuild.log', 'utf8');
+              const lines = log.split('\n');
+              const errors = lines.filter(l => l.includes('error:') || l.includes('fatal error:'));
+              let summary = errors.slice(0, 50).join('\n');
+              if (!summary) summary = lines.slice(-100).join('\n');
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: 'Build Failure Log: ' + context.sha.substring(0, 7),
+                body: '### Xcodebuild Output:\n```\n' + summary + '\n```'
+              });
+            } catch (e) {
+              console.log('Error creating issue:', e);
+            }
 
       - name: Package IPA
         run: |
@@ -54,10 +72,12 @@ jobs:
           path: BitChordIOS/BitChord.ipa
           retention-days: 14
 
-      - name: Upload Build Log
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Release IPA on Success
+        if: success()
+        uses: softprops/action-gh-release@v2
         with:
-          name: xcodebuild-log
-          path: BitChordIOS/xcodebuild.log
-          retention-days: 7
+          tag_name: v1.9.1-ios
+          name: "BitChord iOS v1.9.1 (iPhone 13)"
+          files: BitChordIOS/BitChord.ipa
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
