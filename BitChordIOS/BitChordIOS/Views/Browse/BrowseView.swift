@@ -109,7 +109,12 @@ struct ArtistDetailView: View {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 12) {
                                     ForEach(shelf.items) { item in
-                                        ShelfCardView(item: item, onTap: {})
+                                        ShelfCardView(
+                                            item: item,
+                                            isCurrent: playerVM.currentSong?.videoId == item.videoId,
+                                            isPlaying: playerVM.isPlaying && playerVM.currentSong?.videoId == item.videoId,
+                                            onTap: {}
+                                        )
                                     }
                                 }
                                 .padding(.horizontal, BCLayout.pageGutter)
@@ -209,7 +214,8 @@ private struct BrowseHeaderView: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            ArtworkImage(url: thumbnailUrl, size: 200)
+            ArtworkImage(url: thumbnailUrl.flatMap(URL.init(string:)), cornerRadius: 12)
+                .frame(width: 200, height: 200)
                 .cornerRadius(type == "Artist" ? 100 : 12)
                 .shadow(radius: 20)
                 .padding(.top, 24)

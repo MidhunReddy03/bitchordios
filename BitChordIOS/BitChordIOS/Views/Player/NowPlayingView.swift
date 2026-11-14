@@ -608,7 +608,7 @@ struct LyricsPanelView: View {
                     Color.clear.frame(height: BCLayout.homeIndicator + 80)
                 }
             }
-            .onChange(of: playerVM.currentLyricIndex) { _, idx in
+            .onChange(of: playerVM.currentLyricIndex) { idx in
                 withAnimation(.spring(response: 0.5)) {
                     proxy.scrollTo(max(0, idx - 1), anchor: .top)
                 }

@@ -39,7 +39,10 @@ struct SongRowView: View {
                         .frame(width: 40, height: 40)
                         .multilineTextAlignment(.center)
                 } else {
-                    ArtworkImage(url: song.artworkAt(ArtworkSize.rowArt) ?? song.thumbnailUrl, cornerRadius: 6)
+                    ArtworkImage(
+                        url: song.artworkAt(ArtworkSize.rowArt) ?? song.thumbnailUrl.flatMap(URL.init(string:)),
+                        cornerRadius: 6
+                    )
                         .frame(width: 40, height: 40)
                 }
 
