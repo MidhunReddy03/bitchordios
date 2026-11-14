@@ -20,6 +20,7 @@ jobs:
       - name: Build Archive
         run: |
           cd BitChordIOS
+          set -o pipefail
           xcodebuild archive \
             -project BitChordIOS.xcodeproj \
             -scheme BitChordIOS \
@@ -28,7 +29,15 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES
+            AD_HOC_CODE_SIGNING_ALLOWED=YES 2>&1 | tee xcodebuild.log
+
+      - name: Print Errors if Archive Failed
+        if: failure()
+        run: |
+          cd BitChordIOS
+          echo "==================== BUILD ERRORS ===================="
+          grep -E "(error:|fatal error:|\*\* ARCHIVE FAILED \*\*)" xcodebuild.log -B 2 -A 3 || tail -n 150 xcodebuild.log
+          echo "======================================================="
 
       - name: Package IPA
         run: |
@@ -44,3 +53,11 @@ jobs:
           name: BitChord-iOS-IPA
           path: BitChordIOS/BitChord.ipa
           retention-days: 14
+
+      - name: Upload Build Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: BitChordIOS/xcodebuild.log
+          retention-days: 7
