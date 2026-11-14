@@ -1,0 +1,10 @@
+BitChord-1.9.1/
+.DS_Store
+*.xcuserstate
+project.xcworkspace
+xcuserdata/
+DerivedData/
+build/
+*.xcarchive
+Payload/
+*.ipa

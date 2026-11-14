@@ -1,0 +1,47 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build BitChord IPA
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: sudo xcode-select -switch /Applications/Xcode_16.app/Contents/Developer
+
+      - name: Build Archive
+        run: |
+          cd BitChordIOS
+          xcodebuild archive \
+            -project BitChordIOS.xcodeproj \
+            -scheme BitChordIOS \
+            -destination "generic/platform=iOS" \
+            -archivePath BitChordIOS.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
+
+      - name: Package IPA
+        run: |
+          cd BitChordIOS
+          mkdir -p Payload
+          cp -r BitChordIOS.xcarchive/Products/Applications/BitChordIOS.app Payload/
+          zip -r BitChord.ipa Payload
+          rm -rf Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BitChord-iOS-IPA
+          path: BitChordIOS/BitChord.ipa
+          retention-days: 14
+
