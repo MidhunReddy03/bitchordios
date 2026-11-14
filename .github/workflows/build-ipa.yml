@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  issues: write
 
 jobs:
   build:
@@ -21,49 +20,37 @@ jobs:
       - name: Show Xcode Version
         run: xcodebuild -version
 
-      - name: Build Archive
+      - name: Build Archive and Package IPA
         run: |
           cd BitChordIOS
+          set -e
           xcodebuild archive \
             -project BitChordIOS.xcodeproj \
             -scheme BitChordIOS \
             -destination "generic/platform=iOS" \
-            -archivePath BitChordIOS.xcarchive \
+            -archivePath ./BitChord.xcarchive \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
-            AD_HOC_CODE_SIGNING_ALLOWED=YES 2>&1 | tee xcodebuild.log
+            AD_HOC_CODE_SIGNING_ALLOWED=YES
 
-      - name: Report Build Errors to Issue
-        if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            let log = '';
-            try {
-              log = fs.readFileSync('BitChordIOS/xcodebuild.log', 'utf8');
-              const lines = log.split('\n');
-              const errors = lines.filter(l => l.includes('error:') || l.includes('fatal error:'));
-              let summary = errors.slice(0, 50).join('\n');
-              if (!summary) summary = lines.slice(-100).join('\n');
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: 'Build Failure Log: ' + context.sha.substring(0, 7),
-                body: '### Xcodebuild Output:\n```\n' + summary + '\n```'
-              });
-            } catch (e) {
-              console.log('Error creating issue:', e);
-            }
+          echo "=== Finding .app in archive ==="
+          APP_PATH=$(find ./BitChord.xcarchive -name "*.app" | head -n 1)
+          echo "Found app at: $APP_PATH"
 
-      - name: Package IPA
-        run: |
-          cd BitChordIOS
+          if [ -z "$APP_PATH" ]; then
+            echo "ERROR: No .app found in archive!"
+            find ./BitChord.xcarchive
+            exit 1
+          fi
+
           mkdir -p Payload
-          cp -r BitChordIOS.xcarchive/Products/Applications/BitChordIOS.app Payload/
+          cp -R "$APP_PATH" Payload/
           zip -qr BitChord.ipa Payload
           rm -rf Payload
+
+          echo "=== IPA created successfully ==="
+          ls -lh BitChord.ipa
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
@@ -72,12 +59,13 @@ jobs:
           path: BitChordIOS/BitChord.ipa
           retention-days: 14
 
-      - name: Release IPA on Success
-        if: success()
+      - name: Create Release with IPA
         uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
         with:
-          tag_name: v1.9.1-ios
+          tag_name: v1.9.1
           name: "BitChord iOS v1.9.1 (iPhone 13)"
+          body: "Automated BitChord iOS build for iPhone 13 (iOS 27.2.1 / iOS 16+ compatible). Sideload using AltStore, SideStore, Sideloadly, or TrollStore."
           files: BitChordIOS/BitChord.ipa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
