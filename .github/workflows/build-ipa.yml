@@ -8,14 +8,14 @@ on:
 jobs:
   build:
     name: Build BitChord IPA
-    runs-on: macos-14
+    runs-on: macos-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Select Xcode version
-        run: sudo xcode-select -switch /Applications/Xcode_16.app/Contents/Developer
+      - name: Show Xcode Version
+        run: xcodebuild -version
 
       - name: Build Archive
         run: |
@@ -35,7 +35,7 @@ jobs:
           cd BitChordIOS
           mkdir -p Payload
           cp -r BitChordIOS.xcarchive/Products/Applications/BitChordIOS.app Payload/
-          zip -r BitChord.ipa Payload
+          zip -qr BitChord.ipa Payload
           rm -rf Payload
 
       - name: Upload IPA Artifact
@@ -44,4 +44,3 @@ jobs:
           name: BitChord-iOS-IPA
           path: BitChordIOS/BitChord.ipa
           retention-days: 14
-
